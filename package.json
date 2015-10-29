@@ -9,6 +9,7 @@
   "author": "Tom Byers",
   "license": "MIT",
   "dependencies": {
+    "browsify": "0.0.4",
     "js-yaml": "^3.4.3"
   }
 }

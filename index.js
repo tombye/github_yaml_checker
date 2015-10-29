@@ -1,3 +1,4 @@
+require('js-yaml');
 
 function renderStatus(statusText) {
   document.getElementById('status').textContent = statusText;
