@@ -1,0 +1,14 @@
+{
+  "name": "yaml_extension",
+  "version": "0.0.1",
+  "description": "A YAML validator chrome extension",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "author": "Tom Byers",
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^3.4.3"
+  }
+}
