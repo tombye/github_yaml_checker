@@ -1,1 +1,1 @@
-node ./node_modules/browsify/bin/browsify --to ./index.js popup.js
+node ./node_modules/browserify/bin/cmd.js ./index.js > ./extension/popup.js
