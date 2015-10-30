@@ -1,6 +1,6 @@
 (function (window) {
   var yaml = require('js-yaml'),
-      pageURL = require('./lib/url.js');
+      urls = require('./lib/urls.js');
 
   function renderStatus(statusText) {
     document.getElementById('status').textContent = statusText;
@@ -9,7 +9,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     var callback = function (urlStr) {
       var str = "key: >\n  'it's a thing'",
-          url = pageURL(urlStr),
+          url = urls.PageURL(urlStr),
           result;
       
       console.log('url');

@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (window) {
   var yaml = require('js-yaml'),
-      pageURL = require('./lib/url.js');
+      urls = require('./lib/urls.js');
 
   function renderStatus(statusText) {
     document.getElementById('status').textContent = statusText;
@@ -10,7 +10,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     var callback = function (urlStr) {
       var str = "key: >\n  'it's a thing'",
-          url = pageURL(urlStr),
+          url = urls.PageURL(urlStr),
           result;
       
       console.log('url');
@@ -43,7 +43,7 @@
   });
 })(window);
 
-},{"./lib/url.js":2,"js-yaml":9}],2:[function(require,module,exports){
+},{"./lib/urls.js":2,"js-yaml":9}],2:[function(require,module,exports){
 var extend = require('extend');
 
 function BaseURL(url) {
@@ -73,28 +73,31 @@ function GithubURL() {
   return new GithubURL();
 };
 
-var pages = {
+var urlTypes = {
   'https://github.com': GithubURL
 };
 
-function URL(url) {
-  var URL = function () {
+function PageURL(url) {
+  var PageURL = function () {
     var base = BaseURL(url);
 
     // set base properties
     extend(this, base);
 
-    if (base.origin in pages) {
-      pageType = pages[base.origin]();
-      extend(this, pageType);
+    if (base.origin in urlTypes) {
+      urlType = urlTypes[base.origin]();
+      extend(this, urlType);
       this.init();
     }
   };
 
-  return new URL();
+  return new PageURL();
 };
 
-module.exports = URL;
+module.exports = {
+  'PageURL': PageURL,
+  'GithubURL': GithubURL
+};
 
 },{"extend":8}],3:[function(require,module,exports){
 
