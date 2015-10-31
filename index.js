@@ -1,43 +1,46 @@
 (function (window) {
   var yaml = require('js-yaml'),
-      urls = require('./lib/urls.js');
+      pages = require('./lib/pages.js');
 
   function renderStatus(statusText) {
     document.getElementById('status').textContent = statusText;
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    var callback = function (urlStr) {
-      var str = "key: >\n  'it's a thing'",
-          url = urls.PageURL(urlStr),
-          result;
-      
-      console.log('url');
-      console.log(url);
-      renderStatus('Validating...');
-      try {
-        result = yaml.safeLoad(str, {
-          'onWarning': function () {
-            console.log(arguments);
-          }
-        });
-        renderStatus(result);
-        console.log(result);
-      }
-      catch (e) {
-        console.log('bah, YAML error!');
-        console.log(e);
-      }
-    };
+  function parseYAML(pageYaml) {
+    try {
+      result = yaml.safeLoad(pageYaml, {
+        'onWarning': function () {
+          renderStatus('YAML warning');
+          console.log(arguments);
+        }
+      });
+      renderStatus('YAML is valid');
+      console.log(result);
+    }
+    catch (e) {
+      renderStatus('YAML error: ' + e.message);
+    }
+  }
+  
+  function callback (tabs) {
+    var result;
+    
+    renderStatus('Validating...');
 
+    // send request for YAML to content script
+    chrome.tabs.sendMessage(tabs[0].id, { message: "SEND_EDITOR_YAML" }, function(response) {
+      // parse received YAML
+      parseYAML(response.text);
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function (event) {
     chrome.tabs.query({
       active: true,
       currentWindow: true
     }, function(tabs) {
-      var tab = tabs[0];
-      var url = tab.url;
-
-      callback(url);
+      callback(tabs);
     });
-  });
+  }, false);
+
 })(window);

@@ -12,5 +12,11 @@
   },
   "permissions": [
     "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["scripts/inPage.js"]
+    }
   ]
 }

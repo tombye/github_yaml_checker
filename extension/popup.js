@@ -1,65 +1,127 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (window) {
   var yaml = require('js-yaml'),
-      urls = require('./lib/urls.js');
+      pages = require('./lib/pages.js');
 
   function renderStatus(statusText) {
     document.getElementById('status').textContent = statusText;
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    var callback = function (urlStr) {
-      var str = "key: >\n  'it's a thing'",
-          url = urls.PageURL(urlStr),
-          result;
-      
-      console.log('url');
-      console.log(url);
-      renderStatus('Validating...');
-      try {
-        result = yaml.safeLoad(str, {
-          'onWarning': function () {
-            console.log(arguments);
-          }
-        });
-        renderStatus(result);
-        console.log(result);
-      }
-      catch (e) {
-        console.log('bah, YAML error!');
-        console.log(e);
-      }
-    };
+  function parseYAML(pageYaml) {
+    try {
+      result = yaml.safeLoad(pageYaml, {
+        'onWarning': function () {
+          renderStatus('YAML warning');
+          console.log(arguments);
+        }
+      });
+      renderStatus('YAML is valid');
+      console.log(result);
+    }
+    catch (e) {
+      renderStatus('YAML error: ' + e.message);
+    }
+  }
+  
+  function callback (tabs) {
+    var result;
+    
+    renderStatus('Validating...');
 
+    // send request for YAML to content script
+    chrome.tabs.sendMessage(tabs[0].id, { message: "SEND_EDITOR_YAML" }, function(response) {
+      // parse received YAML
+      parseYAML(response.text);
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', function (event) {
     chrome.tabs.query({
       active: true,
       currentWindow: true
     }, function(tabs) {
-      var tab = tabs[0];
-      var url = tab.url;
-
-      callback(url);
+      callback(tabs);
     });
-  });
+  }, false);
+
 })(window);
 
-},{"./lib/urls.js":2,"js-yaml":9}],2:[function(require,module,exports){
+},{"./lib/pages.js":2,"js-yaml":9}],2:[function(require,module,exports){
 var extend = require('extend');
 
-function BaseURL(url) {
-  var BaseURL = function () {
+function BasePage(url) {
+  var BasePage = function () {
     this.protocol = url.match(/^[a-z]+\:\/\//)[0],
     this.origin = url.match(RegExp('^' + this.protocol + '[^\/]+'))[0],
     this.pathName = url.replace(RegExp('^' + this.origin), '');
   };
 
-  return new BaseURL();
+  return new BasePage();
 };
 
-function GithubURL() {
-  var GithubURL = function () {};
+function GithubPage() {
+  var EditorText = function () {
+    var EditorText = function () {
+      this.EOL = '\n';
+      this.textLayerElm = document.querySelectorAll('.ace_editor .ace_content .ace_text-layer');
+      this.linesElms = this.textLayerElm[0].getElementsByClassName('ace_line');
+      this.linesData = this.getLinesData();
+    }
 
-  GithubURL.prototype.init = function () {
+    EditorText.prototype.getLinesData = function () {
+      var linesData = [],
+          a, b;
+
+      var getLineData = function (lineElm) {
+        var lineData = [],
+            childNodes = lineElm.childNodes,
+            numberOfChildren = childNodes.length,
+            childText,
+            i;
+
+        if (numberOfChildren > 0) {
+          for (i = 0; i < numberOfChildren; i++) {
+            if (childNodes[i].nodeType === 3) {
+              childText = childNodes[i].nodeValue
+            }
+            else {
+              childText = childNodes[i].childNodes[0].nodeValue;
+            }
+            lineData.push(childText);
+          }
+        }
+
+        return lineData;
+      };
+
+      for (a = 0, b = this.linesElms.length; a < b; a++) {
+        linesData.push(getLineData(this.linesElms[a]));      
+      }
+
+      return linesData;
+    };
+
+    EditorText.prototype.toString = function () {
+      var str = "",
+          a, b;
+
+      for (a = 0, b = this.linesData.length; a < b; a++) {
+        lineData = this.linesData[a];
+        for (i = 0, j = lineData.length; i < j; i++) {
+          str += lineData[i];
+        }
+        str += this.EOL;
+      }
+
+      return str;
+    };
+
+    return new EditorText;
+  };
+
+  var GithubPage = function () {};
+
+  GithubPage.prototype.init = function () {
     var pathComponents;
 
     pathComponents = this.pathName.split('/');
@@ -68,35 +130,45 @@ function GithubURL() {
     this.repo = pathComponents[1];
     this.type = pathComponents[2];
     this.branch = pathComponents[3];
+    this.fileName = pathComponents[pathComponents.length - 1];
+    this.fileExtension = this.fileName.split('.')[1];
   };
 
-  return new GithubURL();
+  GithubPage.prototype.EditorText = EditorText;
+
+  GithubPage.prototype.getYaml = function () {
+    var text = EditorText();
+
+    return text.toString();
+  };
+
+  return new GithubPage();
 };
 
-var urlTypes = {
-  'https://github.com': GithubURL
+var pageTypes = {
+  'https://github.com': GithubPage
 };
 
-function PageURL(url) {
-  var PageURL = function () {
-    var base = BaseURL(url);
+function Page(url) {
+  var Page = function () {
+    var base = BasePage(url);
 
     // set base properties
     extend(this, base);
 
-    if (base.origin in urlTypes) {
-      urlType = urlTypes[base.origin]();
+    if (base.origin in pageTypes) {
+      urlType = pageTypes[base.origin]();
       extend(this, urlType);
       this.init();
     }
   };
 
-  return new PageURL();
+  return new Page();
 };
 
 module.exports = {
-  'PageURL': PageURL,
-  'GithubURL': GithubURL
+  'Page': Page,
+  'GithubPage': GithubPage
 };
 
 },{"extend":8}],3:[function(require,module,exports){
