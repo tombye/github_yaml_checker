@@ -1,7 +1,7 @@
 (function (window) {
-  var pages = require('./lib/pages.js');
+  var Page = require('./lib/pages');
 
-  var page = pages.Page(window.location.href),
+  var page = Page(window.location.href),
       yaml;
 
   chrome.runtime.onMessage.addListener(

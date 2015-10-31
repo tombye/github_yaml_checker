@@ -1,8 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (window) {
-  var pages = require('./lib/pages.js');
+  var Page = require('./lib/pages');
 
-  var page = pages.Page(window.location.href),
+  var page = Page(window.location.href),
       yaml;
 
   chrome.runtime.onMessage.addListener(
@@ -16,9 +16,45 @@
   });
 })(window);
 
-},{"./lib/pages.js":2}],2:[function(require,module,exports){
+},{"./lib/pages":2}],2:[function(require,module,exports){
 var extend = require('extend');
+var BasePage = require('./pages/base');
 
+function Page(url) {
+  var getPageTypeForOrigin = function (origin) {
+    var pageTypes = {
+      'https://github.com': require('./pages/github')
+    };
+    var pageType;
+
+    if (origin in pageTypes) {
+      return pageTypes[origin];
+    }
+
+    return false;
+  };
+
+  var Page = function () {
+    var base = BasePage(url);
+
+    // set base properties
+    extend(this, base);
+
+    // if a type of page exists for the origin domain, extend the base with it
+    pageType = getPageTypeForOrigin(base.origin);
+
+    if (pageType) {
+      extend(this, pageType());
+      this.init();
+    }
+  };
+
+  return new Page();
+};
+
+module.exports = Page;
+
+},{"./pages/base":3,"./pages/github":4,"extend":5}],3:[function(require,module,exports){
 function BasePage(url) {
   var BasePage = function () {
     this.protocol = url.match(/^[a-z]+\:\/\//)[0],
@@ -29,6 +65,9 @@ function BasePage(url) {
   return new BasePage();
 };
 
+module.exports = BasePage;
+
+},{}],4:[function(require,module,exports){
 function GithubPage() {
   var EditorText = function () {
     var EditorText = function () {
@@ -115,33 +154,9 @@ function GithubPage() {
   return new GithubPage();
 };
 
-var pageTypes = {
-  'https://github.com': GithubPage
-};
+module.exports = GithubPage;
 
-function Page(url) {
-  var Page = function () {
-    var base = BasePage(url);
-
-    // set base properties
-    extend(this, base);
-
-    if (base.origin in pageTypes) {
-      urlType = pageTypes[base.origin]();
-      extend(this, urlType);
-      this.init();
-    }
-  };
-
-  return new Page();
-};
-
-module.exports = {
-  'Page': Page,
-  'GithubPage': GithubPage
-};
-
-},{"extend":3}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 var hasOwn = Object.prototype.hasOwnProperty;
