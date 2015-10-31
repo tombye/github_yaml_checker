@@ -11,8 +11,13 @@
                 "from a content script:" + sender.tab.url :
                 "from the extension");
     if (request.message == "SEND_EDITOR_YAML")
-      yaml = page.getYaml();
-      sendResponse({text: yaml});
+      try {
+        yaml = page.getYaml();
+        sendResponse({text: yaml});
+      }
+      catch (e) {
+        sendResponse({error: e.message});
+      }
   });
 })(window);
 
@@ -46,6 +51,9 @@ function Page(url) {
     if (pageType) {
       extend(this, pageType());
       this.init();
+    }
+    else {
+      throw new Error('Pages from ' + this.origin + ' are not supported');
     }
   };
 
@@ -141,6 +149,11 @@ function GithubPage() {
     this.branch = pathComponents[3];
     this.fileName = pathComponents[pathComponents.length - 1];
     this.fileExtension = this.fileName.split('.')[1];
+
+    // disable this page reader if the page has no editor
+    if (this.type !== 'edit') {
+      throw new Error('This page has no text editor to check for YAML');
+    }
   };
 
   GithubPage.prototype.EditorText = EditorText;

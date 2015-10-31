@@ -30,8 +30,13 @@
 
     // send request for YAML to content script
     chrome.tabs.sendMessage(tabs[0].id, { message: "SEND_EDITOR_YAML" }, function(response) {
-      // parse received YAML
-      parseYAML(response.text);
+      if (response.text !== false) {
+        // parse received YAML
+        parseYAML(response.text);
+      }
+      else {
+        renderStatus('Sorry, this type of page is not supported yet.');
+      }
     });
   };
 
@@ -76,6 +81,9 @@ function Page(url) {
     if (pageType) {
       extend(this, pageType());
       this.init();
+    }
+    else {
+      throw new Error('Pages from ' + this.origin + ' are not supported');
     }
   };
 
@@ -171,6 +179,11 @@ function GithubPage() {
     this.branch = pathComponents[3];
     this.fileName = pathComponents[pathComponents.length - 1];
     this.fileExtension = this.fileName.split('.')[1];
+
+    // disable this page reader if the page has no editor
+    if (this.type !== 'edit') {
+      throw new Error('This page has no text editor to check for YAML');
+    }
   };
 
   GithubPage.prototype.EditorText = EditorText;

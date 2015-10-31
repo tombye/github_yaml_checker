@@ -29,8 +29,13 @@
 
     // send request for YAML to content script
     chrome.tabs.sendMessage(tabs[0].id, { message: "SEND_EDITOR_YAML" }, function(response) {
-      // parse received YAML
-      parseYAML(response.text);
+      if (response.text !== false) {
+        // parse received YAML
+        parseYAML(response.text);
+      }
+      else {
+        renderStatus('Sorry, this type of page is not supported yet.');
+      }
     });
   };
 

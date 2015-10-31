@@ -10,7 +10,12 @@
                 "from a content script:" + sender.tab.url :
                 "from the extension");
     if (request.message == "SEND_EDITOR_YAML")
-      yaml = page.getYaml();
-      sendResponse({text: yaml});
+      try {
+        yaml = page.getYaml();
+        sendResponse({text: yaml});
+      }
+      catch (e) {
+        sendResponse({error: e.message});
+      }
   });
 })(window);
