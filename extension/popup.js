@@ -125,7 +125,7 @@ function GithubPage() {
     this.type = pathComponents[2];
     this.branch = pathComponents[3];
     this.fileName = pathComponents[pathComponents.length - 1];
-    this.fileExtension = this.fileName.split('.')[1];
+    this.extension = this.fileName.split('.')[1];
 
     // disable this page reader if the page has no editor
     if (this.type !== 'edit') {
