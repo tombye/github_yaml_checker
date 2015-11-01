@@ -36,7 +36,7 @@ describe('GithubPage', function() {
       url;
 
   it('should make the right parts of the url available as properties', function () {
-    url = 'https://github.com/tombye/JsonT-revised';
+    url = 'https://github.com/tombye/JsonT-revised/blob/master/README.md';
     page = GithubPage(url);
     expect(page).to.have.all.keys(['protocol', 'origin', 'pathname', 'user', 'repo', 'type', 'branch', 'filename', 'extension']);
   });
