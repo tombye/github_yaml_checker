@@ -67,7 +67,7 @@ function BasePage(url) {
   var BasePage = function () {
     this.protocol = url.match(/^[a-z]+\:\/\//)[0],
     this.origin = url.match(RegExp('^' + this.protocol + '[^\/]+'))[0],
-    this.pathName = url.replace(RegExp('^' + this.origin), '');
+    this.pathname = url.replace(RegExp('^' + this.origin), '');
   };
 
   return new BasePage();
@@ -141,7 +141,7 @@ function GithubPage() {
   GithubPage.prototype.init = function () {
     var pathComponents;
 
-    pathComponents = this.pathName.split('/');
+    pathComponents = this.pathname.split('/');
     pathComponents.shift();
     this.user = pathComponents[0];
     this.repo = pathComponents[1];
