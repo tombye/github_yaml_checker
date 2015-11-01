@@ -20,12 +20,12 @@ describe('BasePage', function() {
     page = BasePage(url);
     assert.equal(page.protocol, 'http://');
     assert.equal(page.origin, 'http://www.bbc.co.uk');
-    assert.equal(page.pathname, 'news/uk');
+    assert.equal(page.pathname, '/news/uk');
 
     url = 'https://www.bbc.co.uk/news/uk';
     page = BasePage(url);
     assert.equal(page.protocol, 'https://');
     assert.equal(page.origin, 'https://www.bbc.co.uk');
-    assert.equal(page.pathname, 'news/uk');
+    assert.equal(page.pathname, '/news/uk');
   });
 });
