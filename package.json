@@ -4,13 +4,15 @@
   "description": "A YAML validator chrome extension",
   "main": "index.js",
   "scripts": {
-    "test": "npm test"
+    "test": "node_modules/mocha/bin/mocha"
   },
   "author": "Tom Byers",
   "license": "MIT",
   "dependencies": {
     "browserify": "^12.0.1",
+    "chai": "^3.4.0",
     "extend": "^3.0.0",
-    "js-yaml": "^3.4.3"
+    "js-yaml": "^3.4.3",
+    "mocha": "^2.3.3"
   }
 }
