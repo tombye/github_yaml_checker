@@ -10659,7 +10659,7 @@ module.exports = new Type('tag:yaml.org,2002:timestamp', {
 },{}],41:[function(require,module,exports){
 (function (window) {
   var yaml = require('js-yaml'),
-      pages = require('./lib/pages.js');
+      Page = require('./lib/pages');
 
   function renderStatus(statusText) {
     document.getElementById('status').textContent = statusText;
@@ -10682,19 +10682,23 @@ module.exports = new Type('tag:yaml.org,2002:timestamp', {
   }
   
   function callback (tabs) {
-    var result;
+    var result,
+        page;
     
-    renderStatus('Validating...');
+    renderStatus('Starting...');
+
+    try {
+      page = Page(tabs[0].url);
+    }
+    catch (e) {
+      renderStatus(e.message);
+      return;
+    }
 
     // send request for YAML to content script
     chrome.tabs.sendMessage(tabs[0].id, { message: "SEND_EDITOR_YAML" }, function(response) {
-      if (response.text !== false) {
-        // parse received YAML
-        parseYAML(response.text);
-      }
-      else {
-        renderStatus('Sorry, this type of page is not supported yet.');
-      }
+      // parse received YAML
+      parseYAML(response.text);
     });
   };
 
@@ -10709,4 +10713,4 @@ module.exports = new Type('tag:yaml.org,2002:timestamp', {
 
 })(window);
 
-},{"./lib/pages.js":1,"js-yaml":10}]},{},[41]);
+},{"./lib/pages":1,"js-yaml":10}]},{},[41]);
