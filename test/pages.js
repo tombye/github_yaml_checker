@@ -4,6 +4,7 @@ var chai = require('chai'),
     expect = chai.expect;
 
 var BasePage = require(path.normalize(__dirname + '/../lib/pages/base'));
+var GithubPage = require(path.normalize(__dirname + '/../lib/pages/github'));
 
 describe('BasePage', function() {
   var page,
@@ -27,5 +28,16 @@ describe('BasePage', function() {
     assert.equal(page.protocol, 'https://');
     assert.equal(page.origin, 'https://www.bbc.co.uk');
     assert.equal(page.pathname, '/news/uk');
+  });
+});
+
+describe('GithubPage', function() {
+  var page,
+      url;
+
+  it('should make the right parts of the url available as properties', function () {
+    url = 'https://github.com/tombye/JsonT-revised';
+    page = GithubPage(url);
+    expect(page).to.have.all.keys(['protocol', 'origin', 'pathname', 'user', 'repo', 'type', 'branch', 'filename', 'extension']);
   });
 });
