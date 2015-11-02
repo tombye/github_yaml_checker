@@ -1,5 +1,6 @@
 var chai = require('chai'),
     path = require('path'),
+    extend = require('extend'),
     assert = chai.assert,
     expect = chai.expect;
 
@@ -32,12 +33,29 @@ describe('BasePage', function() {
 });
 
 describe('GithubPage', function() {
-  var page,
+  var basePage,
+      githubPage,
       url;
 
   it('should make the right parts of the url available as properties', function () {
-    url = 'https://github.com/tombye/JsonT-revised/blob/master/README.md';
-    page = GithubPage(url);
-    expect(page).to.have.all.keys(['protocol', 'origin', 'pathname', 'user', 'repo', 'type', 'branch', 'filename', 'extension']);
+    basePage = {
+      'protocol': 'https://',
+      'origin': 'https://github.com',
+      'pathname': '/tombye/JsonT-revised/edit/master/README.md'
+    };
+    githubPage = extend(basePage, GithubPage());
+    githubPage.init();
+    expect(githubPage).to.contain.all.keys(['protocol', 'origin', 'pathname', 'user', 'repo', 'type', 'branch', 'filename', 'extension']);
+  });
+
+  it('should throw the correct error if the page type is a blob', function () {
+    basePage = {
+      'protocol': 'https://',
+      'origin': 'https://github.com',
+      'pathname': '/tombye/JsonT-revised/blob/master/README.md'
+    };
+    githubPage = extend(basePage, GithubPage());
+    console.log(githubPage);
+    expect(githubPage.init).to.throw(new Error("This type of page doesn't have a text editor"));
   });
 });
