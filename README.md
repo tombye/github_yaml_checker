@@ -6,7 +6,7 @@ A Chrome extension for checking YAML files on Github while in edit mode.
 
 Download this repository.
 
-Go to [chrome://extensions/](chrome://extensions/).
+Go to chrome://extensions/ in your browser.
 
 If you can't see the 'Load unpacked extension...' button at the top, there should be a 'developer mode' checkbox which if checked will allow this.
 
